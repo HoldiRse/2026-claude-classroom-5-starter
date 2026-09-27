@@ -1,0 +1,20 @@
+{
+  "name": "tutor-maintainer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agent SDK program that maintains the ai-tutor repository (session 5, part C)",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "0.3.283",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.15"
+  }
+}

@@ -4,7 +4,8 @@
   "private": true,
   "workspaces": [
     "packages/api-contract",
-    "cli"
+    "cli",
+    "agents"
   ],
   "scripts": {
     "predev": "npm run build:views",
@@ -21,7 +22,8 @@
     "test:e2e:llm": "E2E_LLM=1 playwright test tests/e2e/todos.llm.spec.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "auth:generate": "npx --yes auth@latest generate --config lib/auth-cli.ts --adapter drizzle --dialect sqlite --output lib/auth-schema.ts -y"
+    "auth:generate": "npx --yes auth@latest generate --config lib/auth-cli.ts --adapter drizzle --dialect sqlite --output lib/auth-schema.ts -y",
+    "maintainer": "npm run --silent -w tutor-maintainer start --"
   },
   "dependencies": {
     "@ag-ui/client": "^0.0.59",
