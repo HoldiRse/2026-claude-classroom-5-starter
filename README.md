@@ -4,11 +4,16 @@ An AI tutoring web app on Next.js 16 App Router, React 19 and Tailwind v4: a Mas
 (Bartholomew, a butler who keeps your to-do list and declines everything else) served to a
 CopilotKit chat over AG-UI, behind Better Auth email/password sign-in, over a Drizzle/SQLite
 persistence layer, with a Vitest and Playwright test harness. The root package is also an npm
-workspace root for `cli/` and `packages/api-contract/`.
+workspace root for `cli/`, `packages/api-contract/`, and `agents/`.
 
-This repository is the starter code for session 4 of the classroom at
-https://github.com/rstropek/2026-claude-classroom, where `storybook-04.md` is the script for
-the session.
+This repository is the starter code for session 5 of the classroom at
+https://github.com/rstropek/2026-claude-classroom, where `storybook-05.md` is the script for
+the session. Session 5 is about running Claude Code without its window: `claude -p` in the
+terminal, the Agent SDK in a TypeScript program, and both in CI. `demos/` holds the files the
+storybook's commands use, and `agents/` holds `tutor-maintainer`, the Agent SDK program.
+
+Besides Node.js, the session uses Claude Code, `jq`, the pi coding agent
+(`npm install -g @earendil-works/pi-coding-agent`), `uv`, and Docker.
 
 ## Setup
 
@@ -44,15 +49,17 @@ credit. It is excluded from `npm run test:e2e`.
 
 ## Code tour
 
-The repository carries two VS Code CodeTours: one walks the path from an agent tool call to
-the component it draws in the chat transcript, the other the build that turns a folder under
-`mcp-apps/` into the single HTML file an MCP host can serve.
+The repository carries three VS Code CodeTours. One walks the path from an agent tool call to
+the component it draws in the chat transcript, one the build that turns a folder under
+`mcp-apps/` into the single HTML file an MCP host can serve, and one the Agent SDK program in
+`agents/`.
 
 1. Install the CodeTour extension (`vsls-contrib.codetour`); VS Code offers it on open.
 2. Open this directory as the workspace root, not a parent folder, or the tours' paths will
    not resolve.
 3. In the CodeTour view of the explorer sidebar, start "Controlled generative UI:
-   useRenderTool" or "MCP App views: one HTML file per view".
+   useRenderTool", "MCP App views: one HTML file per view", or "Agent SDK: the
+   tutor-maintainer program".
 
 ## Architecture
 
