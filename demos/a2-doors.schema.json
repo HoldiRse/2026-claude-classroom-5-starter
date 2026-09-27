@@ -16,7 +16,7 @@
           },
           "auth": {
             "type": "string",
-            "description": "How the caller is authenticated"
+            "description": "How the caller is authenticated, in ten words at most"
           },
           "operations": { "type": "array", "items": { "type": "string" } }
         },
