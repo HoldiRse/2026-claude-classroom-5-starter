@@ -85,7 +85,7 @@ docs/mcp.md                       registering both MCP servers with Claude Code
 ### Agent and CopilotKit
 
 - `@copilotkit/react-core/v2` and `@copilotkit/runtime/v2` (`createCopilotRuntimeHandler`) are the only surfaces that work here; `@copilotkit/react-ui`, the package roots, and the Express/Hono adapters are v1.
-- CopilotKit questions go through the `copilotkit` skill, which sends you to the `copilotkit-docs` MCP server in `.mcp.json`; Mastra questions through the `mastra` skill.
+- CopilotKit questions go through the `copilotkit` skill; Mastra questions through the `mastra` skill.
 - Mastra memory is durable in SQLite, but the default `InMemoryAgentRunner` also keeps a bounded replay cache that can restore the browser transcript until eviction or restart — do not mistake either for the other when debugging.
 
 ### Styling

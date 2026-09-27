@@ -108,7 +108,7 @@ Start the web app (`npm run dev`), then from the repo root:
 claude mcp add --transport http ai-tutor-http http://localhost:3000/api/mcp
 ```
 
-Use a name other than `ai-tutor`. This repo's `.mcp.json` already defines `ai-tutor` as the stdio server, and a local entry with the same name would replace it.
+Use a name other than `ai-tutor` if you also registered the stdio server under that name, because an entry with the same name replaces it.
 
 The URL must use the origin in `BETTER_AUTH_URL`. Access tokens are bound to `<BETTER_AUTH_URL>/api/mcp`, so registering `http://127.0.0.1:3000/api/mcp` while `BETTER_AUTH_URL` is `http://localhost:3000` fails at login. For a deployed app, use its HTTPS URL. Plain HTTP is accepted only for `localhost` and loopback addresses.
 
