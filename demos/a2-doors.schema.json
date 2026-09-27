@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "doors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "door": { "type": "string", "description": "Short name, for example 'REST API'" },
+          "entryFile": { "type": "string", "description": "Repo-relative path of the entry point" },
+          "auth": { "type": "string", "description": "How the caller is authenticated" },
+          "operations": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": ["door", "entryFile", "auth", "operations"]
+      }
+    }
+  },
+  "required": ["doors"]
+}

@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "properties": {
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "severity": { "type": "string", "enum": ["high", "medium", "low"] },
+          "file": { "type": "string" },
+          "line": { "type": "integer" },
+          "title": { "type": "string" },
+          "fix": { "type": "string" }
+        },
+        "required": ["severity", "file", "line", "title", "fix"]
+      }
+    }
+  },
+  "required": ["findings"]
+}
