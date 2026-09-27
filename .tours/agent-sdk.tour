@@ -1,0 +1,109 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "Agent SDK: the tutor-maintainer program",
+  "description": "One TypeScript CLI in agents/ that scripts Claude Code through @anthropic-ai/claude-agent-sdk, one subcommand per step C1 to C5, plus --otel for C6. Walk one section, run its subcommand, then go on. Run all commands from the repository root.",
+  "steps": [
+    {
+      "file": "agents/src/index.ts",
+      "line": 1,
+      "title": "The map",
+      "description": "One CLI, five subcommands, one flag. Each subcommand is one step of the session and adds exactly one idea on top of the one before.\n\n`npm run maintainer -- <subcommand>` runs `tsx src/index.ts` in the `agents` workspace. The workspace keeps the SDK and its peer dependencies away from the app's own packages."
+    },
+    {
+      "file": "agents/src/shared.ts",
+      "line": 14,
+      "title": "C1: cwd decides what loads",
+      "description": "Every `query()` runs with the repository root as `cwd`. The spawned Claude Code finds `AGENTS.md`, `CLAUDE.md`, and the skills there, exactly as the TUI does when you start it in this folder.\n\n**Key point:** the SDK loads user, project, and local settings by default. `settingSources: []` would load nothing from disk."
+    },
+    {
+      "file": "agents/src/shared.ts",
+      "line": 48,
+      "title": "C1: options every run shares",
+      "description": "`strictMcpConfig: true` keeps every MCP server out that the program does not pass in `mcpServers`. Without it, your claude.ai connectors (mail, calendar, whatever you connected) load into a maintenance bot for this repository, and their tool schemas cost tokens on every call."
+    },
+    {
+      "file": "agents/src/hello.ts",
+      "line": 31,
+      "title": "C1: query() is claude -p as a library",
+      "description": "`query()` starts the Claude Code binary that ships with the SDK as a subprocess and talks stream-json to it over stdio. The options are the CLI flags from part A with camelCase names: `tools`, `outputFormat` (`--json-schema`), `persistSession: false` (`--no-session-persistence`).\n\n**Try it:** `npm run maintainer -- hello`, and in a second terminal the `pgrep` line the program prints. You see a `claude` child process."
+    },
+    {
+      "file": "agents/src/hello.ts",
+      "line": 45,
+      "title": "C1: the same events as stream-json",
+      "description": "The loop prints the type of every message. It is the same list `claude -p --output-format stream-json --verbose` prints: `system/init` first, then `assistant` and `user` turns, `result` last.\n\nThe init message carries `apiKeySource`. `none` means the subprocess uses your claude.ai login, which is fine for your own scripts and not for anything you hand to other people."
+    },
+    {
+      "file": "agents/src/run-tests.ts",
+      "line": 72,
+      "title": "C2: a custom tool, in-process",
+      "description": "`tool()` takes a name, a description for the model, a zod shape for the input, and a handler. `createSdkMcpServer()` wraps it as an MCP server that lives in this Node process. The Claude Code subprocess calls it over the SDK's control channel, with no port and no second process.\n\nThe handler runs Vitest with its JSON reporter and returns a short summary: counts, plus the failing tests per file. The model never sees the reporter's full output."
+    },
+    {
+      "file": "agents/src/tests.ts",
+      "line": 44,
+      "title": "C2: three layers of tool control",
+      "description": "`tools` says which built-in tools exist: Read, Grep, Glob, and no Bash. `mcpServers` adds `run_tests`. `allowedTools` pre-approves them, and `permissionMode: \"dontAsk\"` denies everything else without asking.\n\n**Key point:** without Bash, `run_tests` is the only thing this agent can execute. The tool is the policy."
+    },
+    {
+      "file": "agents/src/shared.ts",
+      "line": 126,
+      "title": "C2: typed output, and one trap",
+      "description": "`outputFormat` takes a JSON Schema, and zod 4 writes one with `z.toJSONSchema()`. Its default `$schema` is draft 2020-12, which the CLI rejects with \"no schema with key or ref\". Draft 7 passes.\n\n`tests.ts` parses `structured_output` with the same zod schema, so the program works with typed data."
+    },
+    {
+      "file": "agents/src/guard.ts",
+      "line": 14,
+      "title": "C3: policy as a hook",
+      "description": "A `PreToolUse` hook is a TypeScript callback that runs before the permission check. It denies writes to `.env*`, `drizzle/`, `lib/auth*.ts`, and any `package.json`, and the reason goes back to the model.\n\n**Key point:** the hook runs before a human sees the call, so a protected path is denied even when the human would have typed y."
+    },
+    {
+      "file": "agents/src/gate.ts",
+      "line": 38,
+      "title": "C3: the human gate",
+      "description": "`canUseTool` is the TUI's permission prompt as a function. Claude Code calls it for every tool call that no rule allows. This one prints the edit as a red and green diff and asks y/n in the terminal. A no goes back to the agent together with the reason you type.\n\nThe allow branch could also rewrite the call through `updatedInput`, for example to redirect a path."
+    },
+    {
+      "file": "agents/src/fix.ts",
+      "line": 26,
+      "title": "C3: options for a gated fix",
+      "description": "Reads and `run_tests` are in `allowedTools`, so they never reach `canUseTool`, and the SDK warns about exactly that at startup (`CLAUDE_SDK_CAN_USE_TOOL_SHADOWED`). Edit and Write are not, so every edit goes through the gate.\n\n`enableFileCheckpointing` makes Claude Code back up each file before its first edit. `replay-user-messages` puts the user message UUIDs into the stream, and those are the checkpoint ids."
+    },
+    {
+      "file": "agents/src/fix.ts",
+      "line": 85,
+      "title": "C3: rewind",
+      "description": "After the run the program runs the whole suite itself, because the agent's \"tests pass\" is a claim. A red suite, or a no from the human, resumes the session with an empty prompt and calls `rewindFiles()` on the first checkpoint: a dry run for the report, then the real one.\n\nCheckpoints cover Edit and Write only. A file changed through Bash, or by a subagent, is not rewound."
+    },
+    {
+      "file": "agents/src/review.ts",
+      "line": 26,
+      "title": "C4: a team of subagents",
+      "description": "`agents` defines four reviewers, each with its own prompt, model, tools, and turn limit. The security reviewer runs on Opus, the docs reviewer on Haiku. The orchestrating agent gets the `Agent` tool and the instruction to start all four in one message, so they run in parallel, each in its own context window.\n\n`--single` sends the same four briefs to one agent that works through them in one context."
+    },
+    {
+      "file": "agents/src/review.ts",
+      "line": 108,
+      "title": "C4: what each subagent cost",
+      "description": "Each finished subagent produces a `task_notification` with its tokens, tool uses, and duration. The result's `modelUsage` has the dollars per model. The SDK prices per model, not per subagent, so giving each role its own model is also what makes the bill readable."
+    },
+    {
+      "file": "agents/src/race.ts",
+      "line": 43,
+      "title": "C5: one worktree per fixer",
+      "description": "`AgentDefinition` has no worktree option, so the program runs `git worktree add` itself and gives each `query()` its own `cwd`. `projectConfigRoot` names the checkout the worktree belongs to.\n\nThe worktrees are siblings of the repository, not under `.claude/`, which Claude Code guards against edits. `node_modules` is a symlink to the main checkout's, which is fast, with one catch: workspace packages resolve to the main checkout's copy."
+    },
+    {
+      "file": "agents/src/race.ts",
+      "line": 111,
+      "title": "C5: the program picks the winner",
+      "description": "Both fixers run at the same time with `Promise.all`. When they are done, the program, not an agent, runs the unit tests in each worktree and keeps the cheapest green fix as a branch. The other worktree and its branch are deleted.\n\nThe human still reviews the kept branch before `git merge`."
+    },
+    {
+      "file": "agents/src/shared.ts",
+      "line": 28,
+      "title": "C6: OpenTelemetry",
+      "description": "The telemetry lives in the CLI, and the SDK only passes environment variables. `CLAUDE_CODE_ENABLE_TELEMETRY` switches it on, `CLAUDE_CODE_ENHANCED_TELEMETRY_BETA` plus `OTEL_TRACES_EXPORTER=otlp` produce traces, and the endpoint is Jaeger's OTLP port.\n\n**Trap:** `options.env` replaces the subprocess environment in TypeScript, so the function spreads `process.env` first.\n\n**Try it:** `bash demos/jaeger.sh`, then `npm run maintainer -- review --otel`, then http://localhost:16686."
+    }
+  ]
+}

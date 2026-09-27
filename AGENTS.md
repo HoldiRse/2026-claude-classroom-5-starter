@@ -44,6 +44,8 @@ lib/
   project.ts, tool-result.ts      wizard rules (plain module); AG-UI tool-result decoding
 packages/api-contract/            zod request/response schemas and MCP tool definitions shared by app and CLI
 cli/                              `ai-tutor` CLI (commander, esbuild-bundled) including `mcp --stdio`
+agents/                           `tutor-maintainer`, an Agent SDK program that maintains this repo (not part of the app)
+demos/                            schemas, jq filters, and scripts the session 5 storybook runs
 mcp-apps/<name>/ → mcp-apps/dist/ MCP App views, each bundled into one HTML file by scripts/build-views.mjs
 drizzle/                          generated migrations
 tests/unit, tests/integration     Vitest (node env by default; *.test.tsx is jsdom)
@@ -60,6 +62,7 @@ docs/mcp.md                       registering both MCP servers with Claude Code
 - Schema change: edit `lib/schema.ts`, then `npm run db:generate` and `npm run db:migrate`.
 - Auth change that touches tables: `npm run auth:generate` (rewrites `lib/auth-schema.ts` wholesale), then `db:generate` and `db:migrate`.
 - `npm install` builds the CLI through its `prepare` script; rebuild after edits with `npm run build -w ai-tutor-cli`.
+- `npm run maintainer -- <hello|tests|fix|review|race>` runs the Agent SDK program in `agents/` (it spends Claude credit, see `agents/src/index.ts`).
 - `npm run build:views` bundles the MCP App views; `predev`/`prebuild` run it, but `next dev` does not watch `mcp-apps/`, so re-run it by hand after editing a view.
 
 ## Gotchas
@@ -119,4 +122,4 @@ docs/mcp.md                       registering both MCP servers with Claude Code
 - Update this file in the same change set whenever a change invalidates a line here or teaches a costly lesson.
 - Keep it a map plus non-obvious traps: anything a reader learns by opening the file a line points to belongs in that file's comments, not here.
 - One sentence per bullet, current state only, no history.
-- The two `.tours/*.tour` files anchor by line number into the files they name (`app/page.tsx`, `lib/tutor.ts`, `lib/todo-tools.ts`, the CopilotKit route, `components/`, `scripts/build-views.mjs`, `lib/mcp-app-views.ts`, `mcp-apps/todo-form/`, `package.json`, `.gitignore`, and their tests), so re-check `line` values when those statements move.
+- The three `.tours/*.tour` files anchor by line number into the files they name (`agents/src/`, `app/page.tsx`, `lib/tutor.ts`, `lib/todo-tools.ts`, the CopilotKit route, `components/`, `scripts/build-views.mjs`, `lib/mcp-app-views.ts`, `mcp-apps/todo-form/`, `package.json`, `.gitignore`, and their tests), so re-check `line` values when those statements move.
