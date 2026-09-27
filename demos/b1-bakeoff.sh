@@ -5,9 +5,11 @@
 #
 # Writes bakeoff/<contestant>.jsonl (the event stream) and bakeoff/<contestant>.err,
 # and prints one line per contestant with its exit code and wall-clock seconds.
-# Needs OPENROUTER_API_KEY in .env for Claude Code and pi's OpenRouter login for pi.
+# Needs OPENROUTER_API_KEY in .env. Both harnesses read it from there; it is never printed.
 set -u
 cd "$(dirname "$0")/.."
+OPENROUTER_API_KEY="$(sed -n 's/^OPENROUTER_API_KEY=//p' .env | tr -d "\"' \r")"
+export OPENROUTER_API_KEY
 
 QUESTION="For each of the ways into the todo list, show where the user's identity is established and where the query is scoped to that user, with file and line."
 mkdir -p bakeoff
