@@ -59,3 +59,8 @@ next-env.d.ts
 
 # built MCP App views
 mcp-apps/dist/
+
+# session 5 demo output
+/reports/
+/test-protocol/
+/bakeoff/
