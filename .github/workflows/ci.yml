@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # Nothing here calls a model, so the OpenRouter key is a placeholder and
+      # the auth secret is thrown away with the runner.
+      - name: Write .env
+        run: |
+          secret="$(openssl rand -base64 32)"
+          echo "::add-mask::$secret"
+          cat > .env <<EOF
+          DATABASE_URL=file:./data/app.db
+          OPENROUTER_API_KEY=sk-or-v1-ci-placeholder
+          BETTER_AUTH_SECRET=$secret
+          BETTER_AUTH_URL=http://localhost:3000
+          EOF
+
+      - run: npm run lint
+
+      - run: npm test
+
+      - run: npm run db:migrate
+
+      - run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      # playwright.config.ts skips *.llm.spec.ts unless E2E_LLM is set.
+      - run: npm run test:e2e
+
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14
