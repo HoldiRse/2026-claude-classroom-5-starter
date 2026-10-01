@@ -50,6 +50,8 @@ mcp-apps/<name>/ → mcp-apps/dist/ MCP App views, each bundled into one HTML fi
 drizzle/                          generated migrations
 tests/unit, tests/integration     Vitest (node env by default; *.test.tsx is jsdom)
 tests/e2e                         Playwright against its own `next dev`
+.github/workflows/ci.yml          CI: lint, Vitest, build, Playwright minus the LLM spec, on a generated .env with a placeholder OpenRouter key;
+                                  on PRs also `ai-review`, a bare read-only `claude -p` security review of the diff that fails on a high finding (secret ANTHROPIC_API_KEY)
 docs/mcp.md                       registering both MCP servers with Claude Code
 .agents/skills/ (+ .claude/skills/ copy)   ai-tutor-design, ai-tutor-cli, add-app-to-server, copilotkit, mastra
 .tours/                           CodeTours the README points at
